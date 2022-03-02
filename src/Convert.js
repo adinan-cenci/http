@@ -1,4 +1,5 @@
 const HelperString = require('./HelperString.js');
+const HelperUrl = require('./HelperUrl.js');
 
 class Convert 
 {
@@ -13,10 +14,20 @@ class Convert
             return new URL(string);
         }
 
-        // Javascript does not parse relative URLs
-        var trailingSlash = string.substr(0, 0) == '/';
-        var url = new URL(window.location.origin + '/' + HelperString.rtrim(string, '/'));
-        url.placeholder = window.location.origin + ( trailingSlash ? '' : '/' );
+        // Relative URL
+        const endingSlash   = string.slice(-1) == '/';
+        const beginingSlash = string.slice(0, 1) == '/';
+        const baseString    = HelperUrl.getBaseUrl();
+
+        if (beginingSlash) {
+            var url = new URL(baseString);
+            url.pathname = string;
+            url.placeholder = url.toString().replace(string, '');
+        } else {
+            var url = new URL(baseString + HelperString.ltrim(string, '/'));
+            url.placeholder = baseString + ( endingSlash ? '' : '/' );
+        }
+
         return url;
     }
 

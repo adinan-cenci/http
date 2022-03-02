@@ -1,7 +1,6 @@
 const Http = require('../index.js');
 const http = new Http();
 
-
 function testPostRequestQueryString() 
 {
     http.post('post-with-query-string.php', { body: 'foo=bar' });

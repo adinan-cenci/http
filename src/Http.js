@@ -5,7 +5,7 @@ class Http
 {
     fetch(url, options = {}) 
     {
-        if (typeof options.method == 'undefined') {
+        if (options.method == null || typeof options.method == 'undefined') {
             options.method = get;
         }
 
@@ -35,12 +35,12 @@ class Http
     {
         options.method = 'get';
 
-        if (typeof options.params != 'undefined') {
+        if (options.params != null && typeof options.params != 'undefined') {
             url = Http.addToQueryString(url, options.params);
             options.params = undefined;
         }
 
-        if (typeof options.body != 'undefined') {
+        if (options.body != null && typeof options.body != 'undefined') {
             url = Http.addToQueryString(url, options.body);
             options.body = undefined;
         }
@@ -90,7 +90,7 @@ class Http
 
     async request(url, options = {}) 
     {
-        if (typeof options.params != 'undefined') {
+        if (options.params != null && typeof options.params != 'undefined') {
             url = Http.addToQueryString(url, options.params);
             options.params = undefined;
         }
