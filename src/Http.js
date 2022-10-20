@@ -3,11 +3,9 @@ const CastDown = require('./CastDown.js');
 
 class Http 
 {
-    fetch(url, options = {}) 
+    async fetch(url, options = {}) 
     {
-        if (options.method == null || typeof options.method == 'undefined') {
-            options.method = get;
-        }
+        options.method = options.method || 'get';
 
         switch (options.method) {
             case 'post':
@@ -31,77 +29,72 @@ class Http
         }
     }
 
-    get(url, options = {}) 
+    async get(url, options = {}) 
     {
         options.method = 'get';
+        return this.request(url, options);
+    }
 
-        if (options.params != null && typeof options.params != 'undefined') {
+    async post(url, options = {})
+    {
+        options.method = 'post';
+        return this.request(url, options);
+    }
+
+    async put(url, options = {}) 
+    {
+        options.method = 'put';
+        return this.request(url, options);
+    }
+
+    async delete(url, options = {}) 
+    {
+        options.method = 'delete';
+        return this.request(url, options);
+    }
+
+    async options(url, options = {})
+    {
+        options.method = 'options';
+        return this.request(url, options);
+    }
+
+    async patch(url, options = {})
+    {
+        options.method = 'patch';
+        return this.request(url, options);
+    }
+
+    static createRequest(url, options) 
+    {
+        if (! ['get', 'post'].includes(options.method)) {            
+            options.headers['x-http-method-override'] = options.method;
+            options.method = 'post';
+        }
+
+        // Add params to the query string
+        if (options.params) {
             url = Http.addToQueryString(url, options.params);
             options.params = undefined;
         }
 
-        if (options.body != null && typeof options.body != 'undefined') {
+        // Can't send body in get requests, put the data on the URL
+        if (options.method == 'get' && options.body) {
             url = Http.addToQueryString(url, options.body);
             options.body = undefined;
+        } else if (options.body) {
+            options.body = Http.getHeader(options.headers, 'Content-Type') == 'application/json'
+                ? CastDown.toJson(options.body)
+                : CastDown.toFormData(options.body);
         }
 
-        return this.request(url, options);
-    }
-
-    post(url, options = {})
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'post';
-        options.method = 'post';
-        return this.request(url, options);
-    }
-
-    put(url, options = {}) 
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'put';
-        options.method = 'post';
-        return this.request(url, options);
-    }
-
-    delete(url, options = {}) 
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'delete';
-        options.method = 'post';
-        return this.request(url, options);
-    }
-
-    options(url, options = {})
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'options';
-        options.method = 'post';
-        return this.request(url, options);
-    }
-
-    patch(url, options = {})
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'patch';
-        options.method = 'post';
-        return this.request(url, options);
+        return new Request(url, options);
     }
 
     async request(url, options = {}) 
     {
-        if (options.params != null && typeof options.params != 'undefined') {
-            url = Http.addToQueryString(url, options.params);
-            options.params = undefined;
-        }
-
-        if (options.body && Http.getHeader(options.headers, 'Content-Type') == 'application/json') {
-            options.body = CastDown.toJson(options.body);
-        } else if (options.body) {
-            options.body = CastDown.toFormData(options.body);
-        }
-
-        return fetch(url, options);
+        var request = this.createRequest(url, options);
+        return fetch(request);
     }
 
     /**
@@ -113,17 +106,22 @@ class Http
      */
     static addToQueryString(url, data) 
     {
-        var params;
+        var searchParams;
         data = CastDown.toObject(data);
 
-        url = url instanceof URL ? url : Convert.stringToUrl(url);
-        params = url.search ? new URLSearchParams(url.search) : new URLSearchParams();        
+        url = url instanceof URL 
+            ? url 
+            : Convert.stringToUrl(url);
 
-        for (var key in data) {
-            params.append(key, data[key]);
+        searchParams = url.search 
+            ? new URLSearchParams(url.search)
+            : new URLSearchParams();
+
+        for (var propertyName in data) {
+            Convert.addToSearchparam(searchParams, propertyName, object[propertyName]);
         }
 
-        url.search = params.toString();
+        url.search = searchParams.toString();
 
         return Convert.urlToString(url);
     }
