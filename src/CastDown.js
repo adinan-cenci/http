@@ -8,7 +8,7 @@ class CastDown
 
     static toObject(data) 
     {
-        var formData, isString, url, searchParams;
+        var formData, url, searchParams;
 
         if (data.constructor.name == 'Object') {
             return data;
@@ -24,19 +24,19 @@ class CastDown
         }
 
         if (data instanceof URL) {
-            return Convert.searchParamsToObject( new URLSearchParams(data.search) );
+            return Convert.queryStringToObject(data.search);
         }
 
         if (data instanceof URLSearchParams) {
             return Convert.searchParamsToObject(data);
         }
 
-        if (Convert.isValidJson(data)) {
-            return JSON.parse(data);
-        }
-
         if (! typeof data == 'string') {
             return null;
+        }
+
+        if (Convert.isValidJson(data)) {
+            return JSON.parse(data);
         }
 
         url = Convert.stringToUrl(data);
@@ -47,6 +47,8 @@ class CastDown
         if (! CastDown.emptySearchParams(searchParams)) {
             return Convert.searchParamsToObject(searchParams);
         }
+
+        return null;
     }
 
     static toJson(data) 

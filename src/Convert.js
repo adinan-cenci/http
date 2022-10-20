@@ -7,25 +7,25 @@ class Convert
     *** STRING - URL
     ****************************************/
 
-    static stringToUrl(string) 
+    static stringToUrl(uri) 
     {
         // Absolute URL
-        if (string.substr(0, 4) == 'http') {
-            return new URL(string);
+        if (uri.substr(0, 4) == 'http') {
+            return new URL(uri);
         }
 
         // Relative URL
-        const endingSlash   = string.slice(-1) == '/';
-        const beginingSlash = string.slice(0, 1) == '/';
-        const baseString    = HelperUrl.getBaseUrl();
+        const trailingSlash = uri.slice(-1) == '/';
+        const rootPath      = uri.slice(0, 1) == '/';
+        const baseString    = HelperUrl.getBaseHref();
 
-        if (beginingSlash) {
+        if (rootPath) {
             var url = new URL(baseString);
-            url.pathname = string;
-            url.placeholder = url.toString().replace(string, '');
+            url.pathname = uri;
+            url.placeholder = url.toString().replace(uri, '');
         } else {
-            var url = new URL(baseString + HelperString.ltrim(string, '/'));
-            url.placeholder = baseString + ( endingSlash ? '' : '/' );
+            var url = new URL(baseString + HelperString.ltrim(uri, '/'));
+            url.placeholder = baseString;
         }
 
         return url;
@@ -48,24 +48,56 @@ class Convert
 
     static searchParamsToObject(searchParams) 
     {
-        var obj = {};
+        var obj = {}
 
-        for (var [k, v] of searchParams.entries()) {
-            obj[k] = v;
+        for (var [paramName, value] of searchParams.entries()) {
+            var keys = paramName.indexOf('[') == -1
+                ? [paramName]
+                : HelperString.rtrim(paramName, ']').split(/\]?\[/);
+
+            Convert.addPropertyToObject(obj, keys, value);
         }
 
         return obj;
     }
 
-    static objectToSearchParams(object) 
+    static addPropertyToObject(object, keys, value) 
     {
-        var serchParams = new URLSearchParams();
-
-        for (var property in object) {
-            serchParams.set(property, object[property]);
+        var last = keys.pop();
+        for (var key of keys) {
+            if (typeof object[key] == 'undefined') {
+                object[key] = !isNaN(key)
+                ? []
+                : {};
+            }
+            object = object[key];
         }
 
-        return serchParams;
+        object[last] = value;
+    }
+
+    static objectToSearchParams(object) 
+    {
+        var searchParams = new URLSearchParams();
+
+        for (var propertyName in object) {
+            Convert.addToSearchparam(searchParams, propertyName, object[propertyName]);
+        }
+
+        return searchParams;
+    }
+
+    static addToSearchparam(searchParams, paramName, value) 
+    {
+        if (Array.isArray(value) || typeof value == 'object') {
+            
+            for (var propertyName in value) {
+                Convert.addToSearchparam(searchParams, paramName + '[' + propertyName + ']', value[propertyName]);            
+            }
+
+        } else {
+            searchParams.set(paramName, value);
+        }
     }
 
     /***************************************
@@ -76,8 +108,8 @@ class Convert
     {
         var formData = new FormData();
 
-        for (var property in object) {
-            formData.append(property, object[property]);
+        for (var propertyName in object) {
+            Convert.addToSearchparam(formData, propertyName, object[propertyName]);
         }
 
         return formData;
@@ -85,11 +117,7 @@ class Convert
 
     static formDataToObject(formData) 
     {
-        var obj = {};
-
-        formData.forEach((value, key) => obj[key] = value);
-
-        return obj;
+        return Convert.searchParamsToObject(formData);
     }
 
     /***************************************
@@ -100,6 +128,12 @@ class Convert
     {
         var serchParams = Convert.objectToSearchParams(obj);
         return serchParams.toString();
+    }
+
+    static queryStringToObject(queryString) 
+    {
+        var searchParams = new URLSearchParams(queryString);
+        return Convert.searchParamsToObject(searchParams);
     }
 
     static isValidJson(data) 

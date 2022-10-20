@@ -101,22 +101,23 @@ class Http
             options.body = CastDown.toFormData(options.body);
         }
 
-        return this.makeRequest(url, options);
-    }
-
-    makeRequest(url, options) 
-    {
         return fetch(url, options);
     }
 
+    /**
+     * Add data to the query string of url, overriding any overlaping parameters.
+     * 
+     * @param string url 
+     * @param mixed object, FormData, HTMLFormElement, json, querystring, another url
+     * @returns string
+     */
     static addToQueryString(url, data) 
     {
         var params;
+        data = CastDown.toObject(data);
 
         url = url instanceof URL ? url : Convert.stringToUrl(url);
-        params = url.search ? new URLSearchParams(url.search) : new URLSearchParams();
-
-        data = CastDown.toObject(data);
+        params = url.search ? new URLSearchParams(url.search) : new URLSearchParams();        
 
         for (var key in data) {
             params.append(key, data[key]);
