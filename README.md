@@ -7,7 +7,7 @@ A small http library I made for convenience sake.
 ```js
 var defaultOptions = {};
 const Http = require('Http');
-const http = new http(defaultOptions);
+const http = new Http(defaultOptions);
 ```
 Use the `defaultOptions` parameter to inform options that should be used in all requests ( except when overwritten ofcourse ).
 
