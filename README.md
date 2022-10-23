@@ -5,9 +5,12 @@ A small http library I made for convenience sake.
 ## Instantiation
 
 ```js
+var defaultOptions = {};
 const Http = require('Http');
-const http = new http();
+const http = new http(defaultOptions);
 ```
+Use the `defaultOptions` parameter to inform options that should be used in all requests ( except when overwritten ofcourse ).
+
 
 <br><br>
 
@@ -96,12 +99,6 @@ const options = {
 };
 http.post('sending-json.php', options);
 ```
-
-<br><br>
-
-## To do
-- Create actual unit test cases
-
 
 <br><br>
 
