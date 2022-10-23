@@ -2,12 +2,23 @@ const HelperString = require('./HelperString.js');
 
 class HelperUrl 
 {
-    // Always return a string with a trailing slash
+    /**
+     * Returns the base href of the document, usefull when working with
+     * relative urls.
+     * 
+     * @returns string An url
+     */
     static getBaseHref() 
     {
         return HelperUrl.getDocumentBaseHref() ?? HelperUrl.getWindowLocationBaseHref();
     }
 
+    /**
+     * Attempts to figure out the base href based on the current value of 
+     * window.location
+     * 
+     * @returns string An url
+     */
     static getWindowLocationBaseHref() 
     {
         const location = window.location;
@@ -30,6 +41,12 @@ class HelperUrl
         return HelperString.rtrim(href, '/') + '/';
     }
 
+    /**
+     * If specified, returns the href attribute in the <base> tag,
+     * returns null otherwise.
+     * 
+     * @returns string|null
+     */
     static getDocumentBaseHref() 
     {
         const base = document.querySelector('base');
@@ -43,6 +60,15 @@ class HelperUrl
         }
 
         return HelperString.rtrim(href, '/') + '/';
+    }
+
+    /**
+     * @param string uri 
+     * @returns bool
+     */
+    static isAbsolute(uri) 
+    {
+        return uri.substr(0, 4) == 'http';
     }
 }
 

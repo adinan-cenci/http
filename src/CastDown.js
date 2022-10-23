@@ -2,10 +2,14 @@ const Convert = require('./Convert.js');
 
 class CastDown 
 {
-    /***************************************
-    *** CAST DOWN
-    ****************************************/
-
+    /**
+     * Convert different types of data into plain objects: query strings,
+     * urls, json, FormData objects, HTMLFormElement objects, Url objects, 
+     * URLSearchParams objects
+     * 
+     * @param mixed data 
+     * @returns object
+     */
     static toObject(data) 
     {
         var formData, url, searchParams;
@@ -51,6 +55,14 @@ class CastDown
         return null;
     }
 
+    /**
+     * Convert different types of data into json strings: query strings,
+     * urls, plain objects, FormData objects, HTMLFormElement objects, Url objects, 
+     * URLSearchParams objects
+     * 
+     * @param mixed data 
+     * @returns string Json string.
+     */
     static toJson(data) 
     {
         var obj;
@@ -64,6 +76,14 @@ class CastDown
         return JSON.stringify(obj);
     }
 
+    /**
+     * Convert different types of data into FormData objects: query strings,
+     * urls, plain objects, json strings, HTMLFormElement objects, Url objects, 
+     * URLSearchParams objects
+     * 
+     * @param mixed data 
+     * @returns FormData
+     */
     static toFormData(data) 
     {
         var obj;
@@ -81,6 +101,10 @@ class CastDown
         return Convert.objectToFormData(obj);
     }
 
+    /**
+     * @param URLSearchParams
+     * @returns bool
+     */
     static emptySearchParams(searchParams) 
     {
         for (var value of searchParams.values()) {

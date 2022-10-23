@@ -3,34 +3,44 @@ const HelperUrl = require('./HelperUrl.js');
 
 class Convert 
 {
-    /***************************************
-    *** STRING - URL
-    ****************************************/
-
+    /**
+     * Parses an string into an URL object.
+     * The URL class already parses full url, but not relative ones, 
+     * hence this method.
+     *
+     * @param string uri Absolute or relative.
+     * @return URL
+     */
     static stringToUrl(uri) 
     {
-        // Absolute URL
-        if (uri.substr(0, 4) == 'http') {
+        if (HelperUrl.isAbsolute(uri)) {
             return new URL(uri);
         }
 
-        // Relative URL
-        const trailingSlash = uri.slice(-1) == '/';
-        const rootPath      = uri.slice(0, 1) == '/';
-        const baseString    = HelperUrl.getBaseHref();
+        var url;
+        const isRootPath = uri.slice(0, 1) == '/';
+        const baseHref   = HelperUrl.getBaseHref();
 
-        if (rootPath) {
-            var url = new URL(baseString);
+        if (isRootPath) {
+            url = new URL(baseHref);
             url.pathname = uri;
             url.placeholder = url.toString().replace(uri, '');
         } else {
-            var url = new URL(baseString + HelperString.ltrim(uri, '/'));
-            url.placeholder = baseString;
+            url = new URL(baseHref + HelperString.ltrim(uri, '/'));
+            url.placeholder = baseHref;
         }
 
         return url;
     }
 
+    /**
+     * Convert an URL object back into string.
+     * The URL class already can do that, but it does not support relative
+     * urls, hence this method.
+     * 
+     * @param URL url 
+     * @return string
+     */
     static urlToString(url) 
     {
         var string = url.toString();
@@ -42,15 +52,20 @@ class Convert
         return string;
     }
 
-    /***************************************
-    *** OBJECT - SEARCH PARAM ( URLSearchParams )
-    ****************************************/
-
+    /**
+     * Convert URLSearchParams objects into plain objects.
+     * It will translate array parameters into nested properties, for example:
+     * 'person[name]=foobar' will became {person: {name: 'foobar'}}
+     * 
+     * @param URLSearchParams searchParams
+     * @returns object
+     */
     static searchParamsToObject(searchParams) 
     {
         var obj = {}
 
         for (var [paramName, value] of searchParams.entries()) {
+            // Is array ?
             var keys = paramName.indexOf('[') == -1
                 ? [paramName]
                 : HelperString.rtrim(paramName, ']').split(/\]?\[/);
@@ -61,21 +76,35 @@ class Convert
         return obj;
     }
 
-    static addPropertyToObject(object, keys, value) 
+    /**
+     * Will add a 'value' to object, nesting it inside children properties
+     * based on 'propertiesNames'.
+     * 
+     * @param object object 
+     * @param string[] propertiesNames 
+     * @param mixed value 
+     */
+    static addPropertyToObject(object, propertiesNames, value) 
     {
-        var last = keys.pop();
-        for (var key of keys) {
-            if (typeof object[key] == 'undefined') {
-                object[key] = !isNaN(key)
-                ? []
-                : {};
+        var last = propertiesNames.pop();
+        for (var property of propertiesNames) {
+            if (typeof object[property] == 'undefined') {
+                object[property] = !isNaN(property) ? [] : {};
             }
-            object = object[key];
+            object = object[property];
         }
 
         object[last] = value;
     }
 
+    /**
+     * Converts a plain object into a URLSearchParams.
+     * Nested properties will be rendered as array parameters, for example:
+     * {person: {name: 'foobar'}} will became 'person[name]=foobar'
+     * 
+     * @param object 
+     * @returns URLSearchParams
+     */
     static objectToSearchParams(object) 
     {
         var searchParams = new URLSearchParams();
@@ -87,10 +116,20 @@ class Convert
         return searchParams;
     }
 
+    /**
+     * Will add a new parameter to URLSearchParams or FormData objects.
+     * If 'value' is an array or object, the proprieties children will be
+     * rendered as arrayed parameters, for example:
+     * {person: {name: 'foobar'}} will became 'person[name]=foobar'
+     * 
+     * @param URLSearchParams|FormData searchParams 
+     * @param string paramName 
+     * @param mixed value 
+     */
     static addToSearchparam(searchParams, paramName, value) 
     {
         if (Array.isArray(value) || typeof value == 'object') {
-            
+
             for (var propertyName in value) {
                 Convert.addToSearchparam(searchParams, paramName + '[' + propertyName + ']', value[propertyName]);            
             }
@@ -100,10 +139,14 @@ class Convert
         }
     }
 
-    /***************************************
-    *** OBJECT - FORM DATA
-    ****************************************/
-
+    /**
+     * Convert a plain object into a FormData object.
+     * Nested properties will be rendered as array parameters, for example:
+     * {person: {name: 'foobar'}} will became 'person[name]=foobar'
+     * 
+     * @param object 
+     * @returns FormData
+     */
     static objectToFormData(object) 
     {
         var formData = new FormData();
@@ -115,27 +158,43 @@ class Convert
         return formData;
     }
 
+    /**
+     * Convert FormData objects into plain objects.
+     * It will translate array parameters into nested properties, for example:
+     * 'person[name]=foobar' will became {person: {name: 'foobar'}}
+     * 
+     * @param URLSearchParams searchParams
+     * @returns object
+     */
     static formDataToObject(formData) 
     {
         return Convert.searchParamsToObject(formData);
     }
 
-    /***************************************
-    *** OBJECT - QUERY STRING
-    ****************************************/
-
-    static objectToQueryString(obj) 
+    /**
+     * @param object
+     * @returns string A query string
+     */
+    static objectToQueryString(object) 
     {
-        var serchParams = Convert.objectToSearchParams(obj);
+        var serchParams = Convert.objectToSearchParams(object);
         return serchParams.toString();
     }
 
+    /**
+     * @param string queryString 
+     * @returns object
+     */
     static queryStringToObject(queryString) 
     {
         var searchParams = new URLSearchParams(queryString);
         return Convert.searchParamsToObject(searchParams);
     }
 
+    /**
+     * @param string data 
+     * @returns bool
+     */
     static isValidJson(data) 
     {
         if (typeof data != 'string') {
