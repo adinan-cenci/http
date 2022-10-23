@@ -3,10 +3,24 @@ const CastDown = require('./CastDown.js');
 
 class Http 
 {
+    defaultOptions = {}
+
+    /**
+     * @param object defaultOptions The default options to be used on every
+     * request, except when overwritten ofcourse.
+     */
+    constructor(defaultOptions = {}) 
+    {
+        this.defaultOptions = defaultOptions;
+    }
+
+    /**
+     * @param string url 
+     * @param object options 
+     * @returns Promise
+     */
     async fetch(url, options = {}) 
     {
-        options.method = options.method || 'get';
-
         switch (options.method) {
             case 'post':
                 return this.post(url, options);
@@ -23,8 +37,11 @@ class Http
             case 'patch':
                 return this.patch(url, options);
                 break;
-            default:
+            case 'get':
                 return this.get(url, options);
+                break;
+            default:
+                return this.request(url, options);
                 break;
         }
     }
@@ -93,12 +110,18 @@ class Http
 
     async request(url, options = {}) 
     {
-        var request = this.createRequest(url, options);
+        options = {
+            ...this.defaultOptions,
+            ...options
+        };
+
+        var request = Http.createRequest(url, options);
         return fetch(request);
     }
 
     /**
-     * Add data to the query string of url, overriding any overlaping parameters.
+     * Add data to the query string of the 'url', overwriting any overlaping
+     * parameters.
      * 
      * @param string url 
      * @param mixed object, FormData, HTMLFormElement, json, querystring, another url
@@ -118,7 +141,7 @@ class Http
             : new URLSearchParams();
 
         for (var propertyName in data) {
-            Convert.addToSearchparam(searchParams, propertyName, object[propertyName]);
+            Convert.addToSearchparam(searchParams, propertyName, data[propertyName]);
         }
 
         url.search = searchParams.toString();
@@ -126,13 +149,13 @@ class Http
         return Convert.urlToString(url);
     }
 
-    static getHeader(object, headerName) 
+    static getHeader(headers, headerName) 
     {
         headerName = headerName.toLowerCase();
 
-        for (let prp in object) {
+        for (let prp in headers) {
             if (prp.toLocaleLowerCase() == headerName) {
-                return object[prp];
+                return headers[prp];
             }
         }
 
