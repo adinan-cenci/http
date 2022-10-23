@@ -13,9 +13,7 @@ describe('Convert URL ( REMOVE THE "index.html" FROM THE URL FOR IT TO WORK )', 
             assert.equal(url.pathname, '/my-folder-thingy');
         });
     });
-});
 
-describe('Convert', function () {
     describe('#urlToString()', function () {
         it('it should undo #stringToUrl, returning the original string', function () {
             var uri = 'my-folder-thingy/my-file.php';
@@ -29,7 +27,9 @@ describe('Convert', function () {
             assert.equal(Convert.urlToString(url), uri);
         });
     });
+});
 
+describe('Convert', function () {
     describe('#objectToSearchParams()', function () {
         it('it should convert objects to URLSearchParams objects', function () {
             var originalObject = { query: 'search this', pages: [1, 2], person: {name: 'adinan', surname:'cenci'} };
