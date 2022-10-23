@@ -3,12 +3,24 @@ const CastDown = require('./CastDown.js');
 
 class Http 
 {
-    fetch(url, options = {}) 
-    {
-        if (options.method == null || typeof options.method == 'undefined') {
-            options.method = get;
-        }
+    defaultOptions = {}
 
+    /**
+     * @param object defaultOptions The default options to be used on every
+     * request, except when overwritten ofcourse.
+     */
+    constructor(defaultOptions = {}) 
+    {
+        this.defaultOptions = defaultOptions;
+    }
+
+    /**
+     * @param string url 
+     * @param object options 
+     * @returns Promise
+     */
+    async fetch(url, options = {}) 
+    {
         switch (options.method) {
             case 'post':
                 return this.post(url, options);
@@ -25,115 +37,125 @@ class Http
             case 'patch':
                 return this.patch(url, options);
                 break;
-            default:
+            case 'get':
                 return this.get(url, options);
+                break;
+            default:
+                return this.request(url, options);
                 break;
         }
     }
 
-    get(url, options = {}) 
+    async get(url, options = {}) 
     {
         options.method = 'get';
+        return this.request(url, options);
+    }
 
-        if (options.params != null && typeof options.params != 'undefined') {
+    async post(url, options = {})
+    {
+        options.method = 'post';
+        return this.request(url, options);
+    }
+
+    async put(url, options = {}) 
+    {
+        options.method = 'put';
+        return this.request(url, options);
+    }
+
+    async delete(url, options = {}) 
+    {
+        options.method = 'delete';
+        return this.request(url, options);
+    }
+
+    async options(url, options = {})
+    {
+        options.method = 'options';
+        return this.request(url, options);
+    }
+
+    async patch(url, options = {})
+    {
+        options.method = 'patch';
+        return this.request(url, options);
+    }
+
+    static createRequest(url, options) 
+    {
+        if (! ['get', 'post'].includes(options.method)) {            
+            options.headers['x-http-method-override'] = options.method;
+            options.method = 'post';
+        }
+
+        // Add params to the query string
+        if (options.params) {
             url = Http.addToQueryString(url, options.params);
             options.params = undefined;
         }
 
-        if (options.body != null && typeof options.body != 'undefined') {
+        // Can't send body in get requests, put the data on the URL
+        if (options.method == 'get' && options.body) {
             url = Http.addToQueryString(url, options.body);
             options.body = undefined;
+        } else if (options.body) {
+            options.body = Http.getHeader(options.headers, 'Content-Type') == 'application/json'
+                ? CastDown.toJson(options.body)
+                : CastDown.toFormData(options.body);
         }
 
-        return this.request(url, options);
-    }
-
-    post(url, options = {})
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'post';
-        options.method = 'post';
-        return this.request(url, options);
-    }
-
-    put(url, options = {}) 
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'put';
-        options.method = 'post';
-        return this.request(url, options);
-    }
-
-    delete(url, options = {}) 
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'delete';
-        options.method = 'post';
-        return this.request(url, options);
-    }
-
-    options(url, options = {})
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'options';
-        options.method = 'post';
-        return this.request(url, options);
-    }
-
-    patch(url, options = {})
-    {
-        options.headers = options.headers ?? {};
-        options.headers['x-http-method-override'] = 'patch';
-        options.method = 'post';
-        return this.request(url, options);
+        return new Request(url, options);
     }
 
     async request(url, options = {}) 
     {
-        if (options.params != null && typeof options.params != 'undefined') {
-            url = Http.addToQueryString(url, options.params);
-            options.params = undefined;
-        }
+        options = {
+            ...this.defaultOptions,
+            ...options
+        };
 
-        if (options.body && Http.getHeader(options.headers, 'Content-Type') == 'application/json') {
-            options.body = CastDown.toJson(options.body);
-        } else if (options.body) {
-            options.body = CastDown.toFormData(options.body);
-        }
-
-        return this.makeRequest(url, options);
+        var request = Http.createRequest(url, options);
+        return fetch(request);
     }
 
-    makeRequest(url, options) 
-    {
-        return fetch(url, options);
-    }
-
+    /**
+     * Add data to the query string of the 'url', overwriting any overlaping
+     * parameters.
+     * 
+     * @param string url 
+     * @param mixed object, FormData, HTMLFormElement, json, querystring, another url
+     * @returns string
+     */
     static addToQueryString(url, data) 
     {
-        var params;
-
-        url = url instanceof URL ? url : Convert.stringToUrl(url);
-        params = url.search ? new URLSearchParams(url.search) : new URLSearchParams();
-
+        var searchParams;
         data = CastDown.toObject(data);
 
-        for (var key in data) {
-            params.append(key, data[key]);
+        url = url instanceof URL 
+            ? url 
+            : Convert.stringToUrl(url);
+
+        searchParams = url.search 
+            ? new URLSearchParams(url.search)
+            : new URLSearchParams();
+
+        for (var propertyName in data) {
+            Convert.addToSearchparam(searchParams, propertyName, data[propertyName]);
         }
 
-        url.search = params.toString();
+        url.search = searchParams.toString();
 
         return Convert.urlToString(url);
     }
 
-    static getHeader(object, headerName) 
+    static getHeader(headers, headerName) 
     {
         headerName = headerName.toLowerCase();
 
-        for (let prp in object) {
+        for (let prp in headers) {
             if (prp.toLocaleLowerCase() == headerName) {
-                return object[prp];
+                return headers[prp];
             }
         }
 

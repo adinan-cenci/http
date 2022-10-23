@@ -2,26 +2,22 @@ const gulp    = require('gulp');
 const rename  = require('gulp-rename');
 const webpack = require('webpack-stream');
 
-function testCastDown() 
+function compileDist() 
 {
-  return gulp.src('./test/test-cast-down.js')
+  return gulp.src('./dist.js')
+  .pipe(webpack())
+  .pipe(rename('http.min.js'))
+  .pipe(gulp.dest('./dist/'));
+}
+
+function compileTestFile() 
+{
+  return gulp.src('./tests/test-index.js')
   .pipe(webpack({
     mode: 'development',
   }))
-  .pipe(rename('test-cast-down-bundle.js'))
-  .pipe(gulp.dest('./test/'));
+  .pipe(rename('test-index-compiled.js'))
+  .pipe(gulp.dest('./tests/'));
 }
 
-function testHttp() 
-{
-  return gulp.src('./test/test-http.js')
-  .pipe(webpack({
-    mode: 'development',
-  }))
-  .pipe(rename('test-http-bundle.js'))
-  .pipe(gulp.dest('./test/'));
-}
-
-exports.testCastDown = testCastDown;
-exports.testHttp = testHttp;
-exports.default = gulp.series(testCastDown, testHttp);
+exports.default = gulp.series(compileDist, compileTestFile);

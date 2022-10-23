@@ -2,13 +2,17 @@ const Convert = require('./Convert.js');
 
 class CastDown 
 {
-    /***************************************
-    *** CAST DOWN
-    ****************************************/
-
+    /**
+     * Convert different types of data into plain objects: query strings,
+     * urls, json, FormData objects, HTMLFormElement objects, Url objects, 
+     * URLSearchParams objects
+     * 
+     * @param mixed data 
+     * @returns object
+     */
     static toObject(data) 
     {
-        var formData, isString, url, searchParams;
+        var formData, url, searchParams;
 
         if (data.constructor.name == 'Object') {
             return data;
@@ -24,19 +28,19 @@ class CastDown
         }
 
         if (data instanceof URL) {
-            return Convert.searchParamsToObject( new URLSearchParams(data.search) );
+            return Convert.queryStringToObject(data.search);
         }
 
         if (data instanceof URLSearchParams) {
             return Convert.searchParamsToObject(data);
         }
 
-        if (Convert.isValidJson(data)) {
-            return JSON.parse(data);
-        }
-
         if (! typeof data == 'string') {
             return null;
+        }
+
+        if (Convert.isValidJson(data)) {
+            return JSON.parse(data);
         }
 
         url = Convert.stringToUrl(data);
@@ -47,8 +51,18 @@ class CastDown
         if (! CastDown.emptySearchParams(searchParams)) {
             return Convert.searchParamsToObject(searchParams);
         }
+
+        return null;
     }
 
+    /**
+     * Convert different types of data into json strings: query strings,
+     * urls, plain objects, FormData objects, HTMLFormElement objects, Url objects, 
+     * URLSearchParams objects
+     * 
+     * @param mixed data 
+     * @returns string Json string.
+     */
     static toJson(data) 
     {
         var obj;
@@ -62,6 +76,14 @@ class CastDown
         return JSON.stringify(obj);
     }
 
+    /**
+     * Convert different types of data into FormData objects: query strings,
+     * urls, plain objects, json strings, HTMLFormElement objects, Url objects, 
+     * URLSearchParams objects
+     * 
+     * @param mixed data 
+     * @returns FormData
+     */
     static toFormData(data) 
     {
         var obj;
@@ -79,6 +101,10 @@ class CastDown
         return Convert.objectToFormData(obj);
     }
 
+    /**
+     * @param URLSearchParams
+     * @returns bool
+     */
     static emptySearchParams(searchParams) 
     {
         for (var value of searchParams.values()) {
