@@ -2,15 +2,15 @@ const gulp    = require('gulp');
 const rename  = require('gulp-rename');
 const webpack = require('webpack-stream');
 
-function compile() 
+function compileDist() 
 {
-  return gulp.src('./index.js')
+  return gulp.src('./dist.js')
   .pipe(webpack())
   .pipe(rename('http.min.js'))
   .pipe(gulp.dest('./dist/'));
 }
 
-function testCompile() 
+function compileTestFile() 
 {
   return gulp.src('./tests/test-index.js')
   .pipe(webpack({
@@ -20,4 +20,4 @@ function testCompile()
   .pipe(gulp.dest('./tests/'));
 }
 
-exports.default = gulp.series(compile, testCompile);
+exports.default = gulp.series(compileDist, compileTestFile);

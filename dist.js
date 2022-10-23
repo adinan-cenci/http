@@ -1,0 +1,1 @@
+window.Http = require('./src/Http.js');
