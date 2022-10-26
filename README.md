@@ -1,6 +1,6 @@
 # Http
 
-A small http library I made for convenience sake.
+A small http library I made out of convenience.
 
 ## Instantiation
 

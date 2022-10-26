@@ -21,29 +21,11 @@ class Http
      */
     async fetch(url, options = {}) 
     {
-        switch (options.method) {
-            case 'post':
-                return this.post(url, options);
-                break;
-            case 'put':
-                return this.put(url, options);
-                break;
-            case 'delete':
-                return this.delete(url, options);
-                break;
-            case 'options':
-                return this.options(url, options);
-                break;
-            case 'patch':
-                return this.patch(url, options);
-                break;
-            case 'get':
-                return this.get(url, options);
-                break;
-            default:
-                return this.request(url, options);
-                break;
+        if (! options.method) {
+            options.method = 'get';
         }
+
+        return this.request(url, options);
     }
 
     async get(url, options = {}) 
