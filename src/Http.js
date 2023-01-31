@@ -66,6 +66,10 @@ class Http
 
     static createRequest(url, options) 
     {
+        if (options.headers == undefined) {
+            options.headers = {};
+        }
+
         if (! ['get', 'post'].includes(options.method)) {            
             options.headers['x-http-method-override'] = options.method;
             options.method = 'post';
