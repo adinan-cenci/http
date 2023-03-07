@@ -91,7 +91,26 @@ class Http
                 : CastDown.toFormData(options.body);
         }
 
+        Http.clearUpOptions(options);
+
         return new Request(url, options);
+    }
+
+    static clearUpOptions(options) 
+    {
+        for (var property in options) {
+            if (options[property] === undefined) {
+                delete options[property];
+            }
+        }
+
+        if (options.headers) {
+            for (var header in options.headers) {
+                if (options.headers[header] === undefined) {
+                    delete options.headers[header];
+                }
+            }
+        }
     }
 
     async request(url, options = {}) 

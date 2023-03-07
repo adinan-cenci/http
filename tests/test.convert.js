@@ -1,6 +1,6 @@
 var assert = chai.assert;
 
-describe('Convert URL ( REMOVE THE "index.html" FROM THE URL FOR IT TO WORK )', function () {    
+describe('Convert URL ( REMOVE THE "index.html" FROM THE URL FOR THE TEST TO WORK )', function () {    
     describe('#stringToUrl()', function () {
         it('should instantiate full URL objects from relative paths', function () {
             var url = Convert.stringToUrl('my-folder-thingy');
