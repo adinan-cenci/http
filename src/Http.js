@@ -70,11 +70,6 @@ class Http
             options.headers = {};
         }
 
-        if (! ['get', 'post'].includes(options.method)) {            
-            options.headers['x-http-method-override'] = options.method;
-            options.method = 'post';
-        }
-
         // Add params to the query string
         if (options.params) {
             url = Http.addToQueryString(url, options.params);
