@@ -1,5 +1,7 @@
-const Convert = require('./Convert.js');
-const CastDown = require('./CastDown.js');
+const Convert      = require('./Convert.js');
+const CastDown     = require('./CastDown.js');
+const HelperUrl    = require('./HelperUrl.js');
+const HelperString = require('./HelperString.js');
 
 class Http 
 {
@@ -11,6 +13,10 @@ class Http
      */
     constructor(defaultOptions = {}) 
     {
+        if (defaultOptions.baseHref != undefined) {
+            defaultOptions.baseHref = HelperString.rtrim(defaultOptions.baseHref, '/') + '/';
+        }
+
         this.defaultOptions = defaultOptions;
     }
 
@@ -66,6 +72,10 @@ class Http
 
     static createRequest(url, options) 
     {
+        if (options.baseHref != undefined && !HelperUrl.isAbsolute(url)) {
+            url = options.baseHref + HelperString.ltrim(url, '/');
+        }
+
         if (options.headers == undefined) {
             options.headers = {};
         }

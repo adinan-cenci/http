@@ -9,8 +9,8 @@ var defaultOptions = {};
 const Http = require('Http');
 const http = new Http(defaultOptions);
 ```
-Use the `defaultOptions` parameter to inform options that should be used in all requests ( except when overwritten ofcourse ).
 
+Use the `defaultOptions` parameter to inform options that should be used in all requests ( except when overwritten ofcourse ).
 
 <br><br>
 
@@ -57,6 +57,7 @@ You can use all those formats, they will be automatically converted to `FormData
 <br><br>
 
 ## Params
+
 The `options.params` propriety will be attached to the URL's query string, it accepts the 
 same types as `options.body`.
 
@@ -102,5 +103,21 @@ http.post('sending-json.php', options);
 
 <br><br>
 
+## Base Href
+
+By default the document's base href is used, but you can specify the `baseHref` option it in the `defaultOptions` parameter, for example:
+
+```js
+// https://my-site.com
+
+http = new Http({ baseHref: 'https://another-site.com' });
+
+// Will make a request to https://another-site.com/foo-bar.txt
+http.get('foo-bar.txt');
+```
+
+<br><br>
+
 ## License
+
 MIT
