@@ -72,18 +72,20 @@ class Http
 
     static createRequest(url, options) 
     {
-        if (options.baseHref != undefined && !HelperUrl.isAbsolute(url)) {
-            url = options.baseHref + HelperString.ltrim(url, '/');
+        if (typeof url == 'string') {
+            url = HelperUrl.isRelative(url)
+                ? new URL(url, options.baseHref || HelperUrl.getBaseHref())
+                : new URL(url);
         }
 
         if (options.headers == undefined) {
             options.headers = {};
         }
 
-        // Add params to the query string
-        if (options.params) {
-            url = Http.addToQueryString(url, options.params);
-            options.params = undefined;
+        // Add queryParams to the query string
+        if (options.queryParams) {
+            url = Http.addToQueryString(url, options.queryParams);
+            options.queryParams = undefined;
         }
 
         // Can't send body in get requests, put the data on the URL
@@ -133,7 +135,7 @@ class Http
      * Add data to the query string of the 'url', overwriting any overlaping
      * parameters.
      * 
-     * @param string url 
+     * @param string|URL url 
      * @param mixed object, FormData, HTMLFormElement, json, querystring, another url
      * @returns string
      */
@@ -142,7 +144,9 @@ class Http
         var searchParams;
         data = CastDown.toObject(data);
 
-        url = url instanceof URL 
+        var isObject = url instanceof URL;
+
+        url = isObject 
             ? url 
             : Convert.stringToUrl(url);
 
@@ -156,7 +160,9 @@ class Http
 
         url.search = searchParams.toString();
 
-        return Convert.urlToString(url);
+        return isObject 
+            ? url 
+            : Convert.urlToString(url);
     }
 
     static getHeader(headers, headerName) 

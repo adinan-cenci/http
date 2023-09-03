@@ -63,12 +63,21 @@ class HelperUrl
     }
 
     /**
-     * @param string uri 
+     * @param string|URL uri 
      * @returns bool
      */
     static isAbsolute(uri) 
     {
-        return uri.substr(0, 4) == 'http';
+        return uri instanceof URL || uri.substr(0, 4) == 'http';
+    }
+
+    /**
+     * @param string|URL uri
+     * @returns bool
+     */
+    static isRelative(uri) 
+    {
+        return !HelperUrl.isAbsolute(uri);
     }
 }
 

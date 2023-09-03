@@ -14,7 +14,7 @@ Use the `defaultOptions` parameter to inform options that should be used in all 
 
 <br><br>
 
-## Post request
+## The body of a request
 
 You may use objects...
 
@@ -46,23 +46,39 @@ or query strings...
 http.post('my-url.php', { body: 'foo=bar&bar=foo' });
 ```
 
-or query strings attached to full urls...
+or the query strings attached to full urls...
 
 ```js
 http.post('my-url.php', { body: 'https://random.com?foo=bar&bar=foo' });
 ```
 
-You can use all those formats, they will be automatically converted to `FormData` objects.
+You can use all those formats, they will be automatically converted into a `FormData` object.
 
 <br><br>
 
-## Params
+## Options
 
-The `options.params` propriety will be attached to the URL's query string, it accepts the 
-same types as `options.body`.
+The library adds support to a few custom properties.  
+
+**Query params**  
+The `options.queryParams` propriety will be attached to the URL's query string, it accepts the same types as `options.body`.
+
+If the url already has a query string, then they will be merged.
 
 ```js
-http.post('my-url.php', { body: { postVar: 'foo' }, params: { getVar: 'bar' } });
+http.post('my-url.php', { body: { postVar: 'foo' }, queryParams: { getVar: 'bar' } });
+```
+
+**Base Href**  
+By default the document's base href is used, but you can specify a different one in the `baseHref` option, for example:
+
+```js
+// https://my-site.com
+
+http = new Http({ baseHref: 'https://another-site.com' });
+
+// Will make a request to https://another-site.com/foo-bar.txt
+http.get('foo-bar.txt');
 ```
 
 <br><br>
@@ -99,21 +115,6 @@ const options = {
     }
 };
 http.post('sending-json.php', options);
-```
-
-<br><br>
-
-## Base Href
-
-By default the document's base href is used, but you can specify the `baseHref` option it in the `defaultOptions` parameter, for example:
-
-```js
-// https://my-site.com
-
-http = new Http({ baseHref: 'https://another-site.com' });
-
-// Will make a request to https://another-site.com/foo-bar.txt
-http.get('foo-bar.txt');
 ```
 
 <br><br>
